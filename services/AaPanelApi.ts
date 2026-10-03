@@ -89,6 +89,15 @@ export interface Site {
   ps: string;
   addtime: string;
   edate: string;
+  php_version?: string;
+  project_type?: string;
+  backup_count?: number;
+  domain?: string;
+  rname?: string;
+  site_ssl?: string | number;
+  attack?: string | number;
+  quota?: { free?: string | number; size?: string | number; used?: string | number };
+  ssl?: { notAfter?: string; dns?: string[]; endtime?: string | number; issuer?: string; notBefore?: string; subject?: string };
 }
 
 export class AaPanelApi {
@@ -100,7 +109,9 @@ export class AaPanelApi {
     if (!panel_url || !api_key) {
       throw new Error("Panel URL and API Key are required.");
     }
-    this.PANEL_URL = panel_url;
+    const parsedUrl = new URL(panel_url.trim());
+    if (!['http:', 'https:'].includes(parsedUrl.protocol)) throw new Error('Use an HTTP or HTTPS panel URL.');
+    this.PANEL_URL = panel_url.trim().replace(/\/+$/, '');
     this.API_KEY = api_key;
   }
 
@@ -140,6 +151,7 @@ export class AaPanelApi {
       }
       
       if (typeof response.data === 'object') {
+        if (response.data?.status === false) throw new Error(response.data.msg || 'Panel rejected the request.');
         return response.data;
       } else {
         try {
@@ -195,14 +207,13 @@ export class AaPanelApi {
         errorMessage = `Request setup error: ${err.message}`;
       }
       
-      console.error(`API request to ${url} failed:`, err);
+      console.error(`API request to ${url} failed:`, errorMessage);
       
       // Create a detailed error object
       const detailedError = new Error(errorMessage);
-      (detailedError as any).originalError = err;
       (detailedError as any).endpoint = endpoint;
       (detailedError as any).panelUrl = this.PANEL_URL;
-      throw err;
+      throw detailedError;
     }
   }
 

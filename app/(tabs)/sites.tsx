@@ -1,3 +1,6 @@
+import { useRouter } from 'expo-router';
+import { Alert } from '@/utils/alert';
+import { useIsFocused } from '@react-navigation/native';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -6,7 +9,6 @@ import {
   ScrollView,
   RefreshControl,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
   useColorScheme,
 } from 'react-native';
@@ -17,6 +19,7 @@ import { Globe, Play, Square, Calendar, Folder, Settings, StopCircle, Info } fro
 import Colors from '@/constants/Colors';
 
 export default function SitesScreen() {
+  const router = useRouter();
   const [isConfigured, setIsConfigured] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
@@ -25,6 +28,7 @@ export default function SitesScreen() {
   const [actionLoading, setActionLoading] = useState<{ [key: number]: boolean }>({});
   const [expandedSiteId, setExpandedSiteId] = useState<number | null>(null);
 
+  const isFocused = useIsFocused();
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? Colors.dark : Colors.light;
 
@@ -32,7 +36,7 @@ export default function SitesScreen() {
 
   useEffect(() => {
     checkConfiguration();
-  }, []);
+  }, [isFocused]);
 
   const checkConfiguration = async () => {
     try {
@@ -53,28 +57,7 @@ export default function SitesScreen() {
   };
 
   const handleEditConfiguration = () => {
-    Alert.alert(
-      'Edit Configuration',
-      'Do you want to update your panel URL and API key?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Edit', 
-          onPress: async () => {
-            try {
-              await AsyncStorage.removeItem('panel_url');
-              await AsyncStorage.removeItem('api_key');
-              setIsConfigured(false);
-              setApi(null);
-              setSites([]);
-            } catch (error) {
-              console.error('Error clearing configuration:', error);
-              Alert.alert('Error', 'Failed to clear configuration');
-            }
-          }
-        },
-      ]
-    );
+    router.push('/settings');
   };
   const fetchSites = async (apiInstance?: AaPanelApi) => {
     const apiToUse = apiInstance || api;
@@ -190,8 +173,8 @@ export default function SitesScreen() {
 
   const formatDate = (dateString: string) => {
     try {
-      const date = new Date(parseInt(dateString) * 1000);
-      return date.toLocaleDateString();
+      const date = new Date(/^\d+$/.test(String(dateString)) ? Number(dateString) * (String(dateString).length > 10 ? 1 : 1000) : String(dateString).replace(' ', 'T'));
+      return Number.isNaN(date.getTime()) ? String(dateString) : date.toLocaleDateString();
     } catch {
       return dateString;
     }
@@ -292,6 +275,7 @@ export default function SitesScreen() {
                 <View style={dynamicStyles.actionButtons}>
                   {site.status === '1' ? (
                     <TouchableOpacity
+                      accessibilityLabel={`Stop ${site.name}`}
                       style={[dynamicStyles.actionButton, dynamicStyles.stopButton]}
                       onPress={() => confirmSiteAction(site, 'stop')}
                       disabled={actionLoading[site.id]}
@@ -303,6 +287,7 @@ export default function SitesScreen() {
                     </TouchableOpacity>
                   ) : (
                     <TouchableOpacity
+                      accessibilityLabel={`Start ${site.name}`}
                       style={[dynamicStyles.actionButton, dynamicStyles.startButton]}
                       onPress={() => confirmSiteAction(site, 'start')}
                       disabled={actionLoading[site.id]}
@@ -542,7 +527,6 @@ const getDynamicStyles = (themeColors: typeof Colors.light) => StyleSheet.create
     width: 40,
     height: 40,
     justifyContent: 'center',
-    alignItems: 'center',
   },
   startButton: {
     backgroundColor: '#10B981',
