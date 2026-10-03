@@ -24,6 +24,7 @@
       "package": "com.teguh02.aapanel_mobile"
     },
     "ios": {
+      "bundleIdentifier": "com.riotemplate.aapanelmobile",
       "supportsTablet": true
     },
     "web": {
