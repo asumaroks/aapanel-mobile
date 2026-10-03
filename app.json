@@ -53,8 +53,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "131bdf3e-4939-4ceb-ad4a-4db6b5d3ea47"
+        "projectId": "7a4e982b-28fe-4e4c-a921-acca95d6bd53"
       }
-    }
+    },
+    "owner": "riotemplate"
   }
 }
