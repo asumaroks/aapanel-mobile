@@ -25,7 +25,10 @@
     },
     "ios": {
       "bundleIdentifier": "com.riotemplate.aapanelmobile",
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "web": {
       "bundler": "metro",

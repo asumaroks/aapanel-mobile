@@ -123,3 +123,7 @@ Restart the development server after changing the proxy origin.
 The proxy is available only in the local Metro development server. A static
 web export requires a separately configured backend or panel CORS support.
 Use `npm run typecheck` and `npm run build:web` to validate changes.
+
+## Android and iOS builds
+
+Sign in to the linked Expo account, then run `eas build --platform android --profile android-apk` for an installable APK. For iPhone, run `eas build --platform ios --profile ios-device`; an Apple Developer account and a registered device are required for internal installation. TestFlight distribution requires App Store Connect setup.
