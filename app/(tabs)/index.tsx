@@ -36,21 +36,6 @@ export default function StatsScreen() {
 
   const dynamicStyles = getDynamicStyles(themeColors);
 
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout | undefined;
-    if (isConfigured && api) {
-      intervalId = setInterval(() => {
-        fetchData(api, false); // Pass the current API instance, no loading indicator
-      }, 3000); // Refresh every 3 seconds
-    }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [isConfigured, api, fetchData]);
-
   // Effect for initial configuration check and setting up API instance
   useEffect(() => {
     const configureApp = async () => {
@@ -127,6 +112,21 @@ export default function StatsScreen() {
     } finally {
     }
   }, [api]);
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | undefined;
+    if (isConfigured && api) {
+      intervalId = setInterval(() => {
+        fetchData(api, false); // Pass the current API instance, no loading indicator
+      }, 3000); // Refresh every 3 seconds
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isConfigured, api, fetchData]);
 
   const checkConfiguration = React.useCallback(async () => {
     try {
