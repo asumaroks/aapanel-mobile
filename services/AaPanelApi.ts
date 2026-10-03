@@ -1,6 +1,7 @@
 import axios from 'axios';
 import qs from 'qs';
 import CryptoJS from 'crypto-js';
+import { Platform } from 'react-native';
 
 export interface SystemTotal {
   cpuNum: number;
@@ -117,7 +118,10 @@ export class AaPanelApi {
   }
 
   private async _request(endpoint: string, params: any = {}, timeout: number = 60000): Promise<any> {
-    const url = `${this.PANEL_URL}${endpoint}`;
+    const proxyOrigin = process.env.EXPO_PUBLIC_PANEL_PROXY_ORIGIN;
+    const useProxy = __DEV__ && Platform.OS === 'web' && proxyOrigin &&
+      new URL(this.PANEL_URL).origin === new URL(proxyOrigin).origin;
+    const url = `${useProxy ? '/panel-api' : this.PANEL_URL}${endpoint}`;
     
     const signature = this._getSignature();
     const postData = { ...params, ...signature };

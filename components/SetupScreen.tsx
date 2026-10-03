@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -69,6 +70,11 @@ export default function SetupScreen({ onSetupComplete }: SetupScreenProps) {
       
       await AsyncStorage.setItem('panel_url', panelUrl.trim());
       await AsyncStorage.setItem('api_key', apiKey.trim());
+
+      if (Platform.OS === 'web') {
+        onSetupComplete();
+        return;
+      }
       
       Alert.alert('Success', 'Configuration saved successfully!', [
         { text: 'OK', onPress: onSetupComplete }
