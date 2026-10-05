@@ -1,49 +1,70 @@
 {
-    "build": {
-      "base": {
-        "env": {},
-        "android": {
-          "image": "auto",
-          "env": {
-            "PLATFORM": "android"
-          }
-        }
-      },
-      "development": {
-        "extends": "base",
-        "developmentClient": true,
+  "cli": {
+    "version": ">= 16.0.0",
+    "appVersionSource": "local"
+  },
+  "build": {
+    "base": {
+      "env": {},
+      "android": {
+        "image": "auto",
         "env": {
-          "ENVIRONMENT": "development"
-        },
-        "android": {
-          "distribution": "internal",
-          "withoutCredentials": true
+          "PLATFORM": "android"
         }
+      }
+    },
+    "development": {
+      "extends": "base",
+      "developmentClient": true,
+      "env": {
+        "ENVIRONMENT": "development"
       },
-      "staging": {
-        "extends": "base",
-        "env": {
-          "ENVIRONMENT": "staging"
-        },
-        "android": {
-          "buildType": "apk"
-        }
+      "android": {
+        "distribution": "internal",
+        "withoutCredentials": true
+      }
+    },
+    "staging": {
+      "extends": "base",
+      "env": {
+        "ENVIRONMENT": "staging"
       },
-      "production": {
-        "extends": "base",
-        "env": {
-          "ENVIRONMENT": "production"
-        },
-        "android": {
-          "buildType": "app-bundle"
-        }
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "extends": "base",
+      "env": {
+        "ENVIRONMENT": "production"
       },
-      "production_apk": {
-        "extends": "production",
-        "android": {
-          "buildType": "apk"
-        }
+      "android": {
+        "buildType": "app-bundle"
+      }
+    },
+    "production_apk": {
+      "extends": "production",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "android-apk": {
+      "extends": "staging",
+      "distribution": "internal",
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "ios-device": {
+      "extends": "base",
+      "distribution": "internal",
+      "env": {
+        "PLATFORM": "ios",
+        "ENVIRONMENT": "staging"
+      },
+      "ios": {
+        "simulator": false
       }
     }
   }
-  
+}

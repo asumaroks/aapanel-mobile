@@ -1,3 +1,5 @@
+import { Alert } from '@/utils/alert';
+import { useIsFocused } from '@react-navigation/native';
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -6,7 +8,6 @@ import {
   ScrollView,
   RefreshControl,
   ActivityIndicator,
-  Alert,
   Dimensions,
   TouchableOpacity,
   useColorScheme,
@@ -31,25 +32,11 @@ export default function StatsScreen() {
   const [networkData, setNetworkData] = useState<NetworkInfo | null>(null);
   const [api, setApi] = useState<AaPanelApi | null>(null);
 
+  const isFocused = useIsFocused();
   const colorScheme = useColorScheme();
   const themeColors = colorScheme === 'dark' ? Colors.dark : Colors.light;
 
   const dynamicStyles = getDynamicStyles(themeColors);
-
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout | undefined;
-    if (isConfigured && api) {
-      intervalId = setInterval(() => {
-        fetchData(api, false); // Pass the current API instance, no loading indicator
-      }, 3000); // Refresh every 3 seconds
-    }
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId);
-      }
-    };
-  }, [isConfigured, api, fetchData]);
 
   // Effect for initial configuration check and setting up API instance
   useEffect(() => {
@@ -74,7 +61,7 @@ export default function StatsScreen() {
       }
     };
     configureApp();
-  }, []); // Run only once on mount
+  }, [isFocused]); // Run only once on mount
 
   const handleEditConfiguration = () => {
     router.push('/settings');
@@ -127,6 +114,21 @@ export default function StatsScreen() {
     } finally {
     }
   }, [api]);
+
+  useEffect(() => {
+    let intervalId: ReturnType<typeof setInterval> | undefined;
+    if (isConfigured && api && isFocused) {
+      intervalId = setInterval(() => {
+        fetchData(api, false); // Pass the current API instance, no loading indicator
+      }, 3000); // Refresh every 3 seconds
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isConfigured, api, fetchData, isFocused]);
 
   const checkConfiguration = React.useCallback(async () => {
     try {
@@ -261,23 +263,23 @@ export default function StatsScreen() {
               </View>
               <View style={dynamicStyles.detailRow}>
                 <Text style={dynamicStyles.detailLabel}>Total Memory:</Text>
-                <Text style={dynamicStyles.detailValue}>{formatBytes(systemData.memTotal * 1024)}</Text>
+                <Text style={dynamicStyles.detailValue}>{formatBytes(systemData.memTotal * 1024 * 1024)}</Text>
               </View>
               <View style={dynamicStyles.detailRow}>
                 <Text style={dynamicStyles.detailLabel}>Used Memory:</Text>
-                <Text style={dynamicStyles.detailValue}>{formatBytes(systemData.memRealUsed * 1024)}</Text>
+                <Text style={dynamicStyles.detailValue}>{formatBytes(systemData.memRealUsed * 1024 * 1024)}</Text>
               </View>
               <View style={dynamicStyles.detailRow}>
                 <Text style={dynamicStyles.detailLabel}>Free Memory:</Text>
-                <Text style={dynamicStyles.detailValue}>{formatBytes(systemData.memFree * 1024)}</Text>
+                <Text style={dynamicStyles.detailValue}>{formatBytes(systemData.memFree * 1024 * 1024)}</Text>
               </View>
               <View style={dynamicStyles.detailRow}>
                 <Text style={dynamicStyles.detailLabel}>Buffered Memory:</Text>
-                <Text style={dynamicStyles.detailValue}>{formatBytes(systemData.memBuffers * 1024)}</Text>
+                <Text style={dynamicStyles.detailValue}>{formatBytes(systemData.memBuffers * 1024 * 1024)}</Text>
               </View>
               <View style={dynamicStyles.detailRow}>
                 <Text style={dynamicStyles.detailLabel}>Cached Memory:</Text>
-                <Text style={dynamicStyles.detailValue}>{formatBytes(systemData.memCached * 1024)}</Text>
+                <Text style={dynamicStyles.detailValue}>{formatBytes(systemData.memCached * 1024 * 1024)}</Text>
               </View>
               <View style={dynamicStyles.detailRow}>
                 <Text style={dynamicStyles.detailLabel}>Uptime:</Text>

@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  Platform,
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
@@ -23,6 +24,7 @@ export default function SetupScreen({ onSetupComplete }: SetupScreenProps) {
   const [apiKey, setApiKey] = useState('');
   const [publicIp, setPublicIp] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [loadingIp, setLoadingIp] = useState(true);
 
   useEffect(() => {
@@ -42,7 +44,9 @@ export default function SetupScreen({ onSetupComplete }: SetupScreenProps) {
   };
 
   const handleSave = async () => {
+    setErrorMessage('');
     if (!panelUrl.trim() || !apiKey.trim()) {
+      setErrorMessage('Please fill in both Panel URL and API Key');
       Alert.alert('Error', 'Please fill in both Panel URL and API Key');
       return;
     }
@@ -51,6 +55,7 @@ export default function SetupScreen({ onSetupComplete }: SetupScreenProps) {
     try {
       new URL(panelUrl);
     } catch {
+      setErrorMessage('Please enter a valid Panel URL.');
       Alert.alert('Error', 'Please enter a valid Panel URL (e.g., https://192.168.0.1:7800)');
       return;
     }
@@ -69,6 +74,11 @@ export default function SetupScreen({ onSetupComplete }: SetupScreenProps) {
       
       await AsyncStorage.setItem('panel_url', panelUrl.trim());
       await AsyncStorage.setItem('api_key', apiKey.trim());
+
+      if (Platform.OS === 'web') {
+        onSetupComplete();
+        return;
+      }
       
       Alert.alert('Success', 'Configuration saved successfully!', [
         { text: 'OK', onPress: onSetupComplete }
@@ -92,6 +102,7 @@ export default function SetupScreen({ onSetupComplete }: SetupScreenProps) {
         }
       }
       
+      setErrorMessage(errorMessage);
       Alert.alert(
         'Connection Failed',
         errorMessage,
@@ -121,6 +132,7 @@ export default function SetupScreen({ onSetupComplete }: SetupScreenProps) {
       </View>
 
       <View style={styles.form}>
+        {!!errorMessage && <Text accessibilityRole="alert" style={{ color: '#EF4444' }}>{errorMessage}</Text>}
         <View style={styles.inputContainer}>
           <Server size={20} color="#6B7280" style={styles.inputIcon} />
           <TextInput

@@ -111,3 +111,19 @@ This application is an independent project developed out of personal interest in
 ## 📄 License
 
 This project is licensed under the MIT License.
+
+## Local web development
+
+For panels without browser CORS support, create `.env.local` containing
+`EXPO_PUBLIC_PANEL_PROXY_ORIGIN=https://your-panel.example.com`, then run
+`npm ci` and `npm run dev:web`. Enter the same panel origin and your API key
+in the application. Do not put the API key in the environment file or repository.
+Restart the development server after changing the proxy origin.
+
+The proxy is available only in the local Metro development server. A static
+web export requires a separately configured backend or panel CORS support.
+Use `npm run typecheck` and `npm run build:web` to validate changes.
+
+## Android and iOS builds
+
+Sign in to the linked Expo account, then run `eas build --platform android --profile android-apk` for an installable APK. For iPhone, run `eas build --platform ios --profile ios-device`; an Apple Developer account and a registered device are required for internal installation. TestFlight distribution requires App Store Connect setup.

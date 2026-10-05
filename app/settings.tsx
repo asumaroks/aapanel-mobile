@@ -13,10 +13,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { Save, XCircle } from 'lucide-react-native';
 import Colors from '@/constants/Colors';
+import { AaPanelApi } from '@/services/AaPanelApi';
 
 export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const [saving, setSaving] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const [panelUrl, setPanelUrl] = useState<string>('');
   const [apiKey, setApiKey] = useState<string>('');
   const [currentIp, setCurrentIp] = useState<string>('Fetching IP...'); // Placeholder for IP
@@ -56,19 +59,26 @@ export default function SettingsScreen() {
   }, []);
 
   const handleSave = async () => {
-    if (!panelUrl || !apiKey) {
+    setErrorMessage('');
+    if (!panelUrl.trim() || !apiKey.trim()) {
+      setErrorMessage('Panel URL and API Key cannot be empty.');
       Alert.alert('Error', 'Panel URL and API Key cannot be empty.');
       return;
     }
 
     try {
-      await AsyncStorage.setItem('panel_url', panelUrl);
-      await AsyncStorage.setItem('api_key', apiKey);
+      setSaving(true);
+      const normalizedUrl = panelUrl.trim().replace(/\/+$/, '');
+      await new AaPanelApi(normalizedUrl, apiKey.trim()).getSystemTotal();
+      await AsyncStorage.multiSet([['panel_url', normalizedUrl], ['api_key', apiKey.trim()]]);
       Alert.alert('Success', 'Settings saved successfully!');
-      router.back(); // Go back to the previous screen (StatsScreen)
+      router.canGoBack() ? router.back() : router.replace('/'); // Go back to the previous screen (StatsScreen)
     } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to save settings.');
       console.error('Error saving settings:', error);
       Alert.alert('Error', 'Failed to save settings.');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -76,7 +86,7 @@ export default function SettingsScreen() {
     <SafeAreaView style={[dynamicStyles.container, { paddingTop: insets.top }]}>
       <View style={dynamicStyles.header}>
         <Text style={dynamicStyles.title}>Settings</Text>
-        <TouchableOpacity onPress={() => router.back()} style={dynamicStyles.closeButton}>
+        <TouchableOpacity onPress={() => router.canGoBack() ? router.back() : router.replace('/')} style={dynamicStyles.closeButton}>
           <XCircle size={24} color={themeColors.text} />
         </TouchableOpacity>
       </View>
@@ -105,9 +115,10 @@ export default function SettingsScreen() {
         <Text style={dynamicStyles.label}>Current Device IP:</Text>
         <Text style={dynamicStyles.ipText}>{currentIp}</Text>
 
-        <TouchableOpacity style={dynamicStyles.saveButton} onPress={handleSave}>
+        {!!errorMessage && <Text accessibilityRole="alert" style={{ color: '#EF4444' }}>{errorMessage}</Text>}
+        <TouchableOpacity disabled={saving} style={dynamicStyles.saveButton} onPress={handleSave}>
           <Save size={20} color="#FFF" />
-          <Text style={dynamicStyles.saveButtonText}>Save Settings</Text>
+          <Text style={dynamicStyles.saveButtonText}>{saving ? 'Testing connection...' : 'Save Settings'}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
